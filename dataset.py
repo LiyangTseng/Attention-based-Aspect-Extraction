@@ -1,6 +1,7 @@
+import warnings
+warnings.filterwarnings("ignore")
 import re
 import csv
-
 from nltk.corpus import stopwords
 from flair.data import Sentence
 from torch.utils.data import Dataset
