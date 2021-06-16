@@ -155,7 +155,9 @@ class AspectAutoencoder(nn.Module):
         a_probs = self.softmax(x)
 
         if self.recon_method == 'centr':
-            r = a_probs.matmul(self.a_emb)
+            # r = a_probs.matmul(self.a_emb)
+            r = a_probs.matmul(F.normalize(self.a_emb, dim=1))
+
         elif self.recon_method == 'fix':
             a_emb_w = self.a_emb.mul(self.seed_w.view(self.num_aspects, self.num_seeds, 1))
             r = a_probs.view(-1, self.num_aspects, 1, 1).mul(a_emb_w).sum(dim=2).sum(dim=1)

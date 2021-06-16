@@ -5,7 +5,7 @@ import csv
 from nltk.corpus import stopwords
 from flair.data import Sentence
 from torch.utils.data import Dataset
-
+from string import punctuation
 class BibleDataset(Dataset):
     def __init__(self, path, word_to_index=True):
         self.word_to_index = word_to_index
@@ -53,6 +53,8 @@ def tokenize(sentence, stop_words):
     sentence = clean_str(sentence)
     tokens = [token.text for token in Sentence(sentence).tokens]
     tokens = [token for token in tokens if token not in stop_words]
+    tokens = [token for token in tokens if token not in punctuation]
+
     return tokens
 
 def padding(li, length):
