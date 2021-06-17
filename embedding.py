@@ -6,6 +6,7 @@ from tqdm import tqdm
 import sys
 
 def avg_embedding(l):
+    ''' averege on different word embeddings '''
     z = list(zip(*l))
     sum_of_lists = list(map(sum, z))
     return np.array(sum_of_lists)
