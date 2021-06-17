@@ -8,7 +8,7 @@ from embedding import get_embedding
 
 output_folder = 'output'
 output_file = 'related_verses.txt'
-ASPECTS_NUM = 30
+ASPECTS_NUM = 50
 BOOK_NAME = ['Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua', 'Judges', 'Ruth', '1 Samuel',
             '2 Samuel', '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles', 'Ezra', 'Nehemiah', 'Esther', 
             'Job', 'Psalm', 'Proverbs', 'Ecclesiastes', 'Song of Solomon', 'Isaiah', 'Jeremiah', 
@@ -26,7 +26,7 @@ def find_verse():
     query = sys.argv[1]
     sort_by_relevence =sys.argv[2]
     query_embedding = get_embedding(query)
-    print(f'query_embedding={query_embedding.shape}')
+    print(f'query_embedding={query_embedding}')
     abae_centers_embeddings = np.load('abae_centers.npy')
 
     # calculating cosine similarity with every aspects centers
