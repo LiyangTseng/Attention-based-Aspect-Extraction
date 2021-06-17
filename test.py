@@ -26,6 +26,7 @@ def find_verse():
     query = sys.argv[1]
     sort_by_relevence =sys.argv[2]
     query_embedding = get_embedding(query)
+    print(f'query_embedding={query_embedding.shape}')
     abae_centers_embeddings = np.load('abae_centers.npy')
 
     # calculating cosine similarity with every aspects centers
