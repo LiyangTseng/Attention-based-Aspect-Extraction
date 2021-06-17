@@ -5,11 +5,11 @@ import numpy as np
 from tqdm import tqdm
 import sys
 
-def avg_embedding(embeddings_tuple):
+def avg_embedding(embeddings_tuple, similarity_sum):
     ''' averege on different word embeddings '''
     z = list(zip(*embeddings_tuple))
     sum_of_lists = list(map(sum, z))
-    return np.array(sum_of_lists)
+    return np.array(sum_of_lists)/similarity_sum
 
 def get_embedding(query, weighted_embed=True):
     query = query.lower()
@@ -33,6 +33,7 @@ def get_embedding(query, weighted_embed=True):
         if weighted_embed:
             ''' query embedding = weighted sum of all embeddings '''
             print_cnt=0
+            similarity_sum = 0
             possible_synonyms = []
             for synonym_tuple in tqdm(synonyms, desc='Searching Synonyms'):
                 if synonym_tuple[0] in embeddings.vocab.keys():
@@ -42,10 +43,11 @@ def get_embedding(query, weighted_embed=True):
                         print('-'*50)
                         print_cnt+=1
                     possible_synonyms.append(embeddings[synonym_tuple[0]]*synonym_tuple[1])
+                    similarity_sum += synonym_tuple[1]
             
             synonym_found = len(possible_synonyms)>0
             if synonym_found:
-                return avg_embedding(possible_synonyms)  
+                return avg_embedding(possible_synonyms, similarity_sum)  
             else:
                 raise Exception('No synonyms found in Bible')
 
