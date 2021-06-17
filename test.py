@@ -1,4 +1,3 @@
-import sys
 import os
 import numpy as np
 from scipy import spatial
@@ -21,19 +20,17 @@ BOOK_NAME = ['Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua
 
 def find_verse():
     '''
-    python test.py [query] [method], see details in embedding.py
+    python test.py [query] -s [True/False] -w [True/False], see details in embedding.py
     '''
     parser = argparse.ArgumentParser()
     parser.add_argument('query', help='query keyword')
-    parser.add_argument('-s', '--sort_method', help='sort by revelence or not', default=True)
+    parser.add_argument('-s', '--sort_by_rev', help='sort by revelence or not', default=True)
     parser.add_argument('-w', '--use_weighted_embedding', help='use weighted embeddings or not', default=True)
     args = parser.parse_args()
     
     query = args.query
-    sort_by_relevence = args.sort_method
+    sort_by_relevence = args.sort_by_rev
     use_weighted_embedding = args.use_weighted_embedding
-    # query = sys.argv[1]
-    # sort_by_relevence =sys.argv[2]
 
     query_embedding = get_embedding(query, use_weighted_embedding)
     print(f'query_embedding={query_embedding.shape}')
@@ -64,14 +61,12 @@ def find_verse():
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
     output_path = os.path.join(output_folder, output_file)
-    bible_df['relevence'] = verse2aspectprob[:, most_similar_aspect]
-        
-        
-    qualified_verses = bible_df[aspects_qualified]
-    if sort_by_relevence.lower() == 'true':
-        print('Verses sorted by relevence')
+    bible_df['relevence'] = verse2aspectprob[:, most_similar_aspect]           
+    qualified_verses = bible_df[aspects_qualified].copy()
+
+    if sort_by_relevence:
         qualified_verses.sort_values(by=['relevence'], ascending = False, inplace = True)
-    print(qualified_verses.head())
+
     with open(output_path, 'w') as outfile:
         for _, verse in qualified_verses.iterrows():
             outfile.write('{book} {chapter}:{verse} "{content}"\n'.format(book=BOOK_NAME[int(verse['b'])-1], chapter=verse['c'],
