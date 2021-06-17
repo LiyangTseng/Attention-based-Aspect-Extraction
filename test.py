@@ -56,10 +56,11 @@ def find_verse():
     if sort_by_relevence.lower() == 'true':
         bible_df['relevence'] = verse2aspectprob[:, most_similar_aspect]
         print('Verses sorted by relevence')
-        print(bible_df.head())
+        
     qualified_verses = bible_df[aspects_qualified]
     if sort_by_relevence.lower() == 'true':
         qualified_verses.sort_values(by=['relevence'], ascending = False, inplace = True)
+    print(qualified_verses.head())
     with open(output_path, 'w') as outfile:
         for _, verse in qualified_verses.iterrows():
             outfile.write('{book} {chapter}:{verse} "{content}"\n'.format(book=BOOK_NAME[int(verse['b'])-1], chapter=verse['c'],
