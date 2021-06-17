@@ -53,12 +53,12 @@ def find_verse():
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
     output_path = os.path.join(output_folder, output_file)
-    if sort_by_relevence.lower() == 'true':
-        bible_df['relevence'] = verse2aspectprob[:, most_similar_aspect]
-        print('Verses sorted by relevence')
+    bible_df['relevence'] = verse2aspectprob[:, most_similar_aspect]
+        
         
     qualified_verses = bible_df[aspects_qualified]
     if sort_by_relevence.lower() == 'true':
+        print('Verses sorted by relevence')
         qualified_verses.sort_values(by=['relevence'], ascending = False, inplace = True)
     print(qualified_verses.head())
     with open(output_path, 'w') as outfile:
