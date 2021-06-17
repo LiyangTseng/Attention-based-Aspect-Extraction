@@ -1,6 +1,7 @@
 import sys
 import os
 import numpy as np
+from numpy.core.fromnumeric import sort
 from scipy import spatial
 import pandas as pd
 from embedding import get_embedding
@@ -23,6 +24,7 @@ def find_verse():
     python test.py [query]
     '''
     query = sys.argv[1]
+    sort_by_relevence =sys.argv[2]
     query_embedding = get_embedding(query)
     abae_centers_embeddings = np.load('abae_centers.npy')
 
@@ -35,10 +37,13 @@ def find_verse():
         if cosine_similarity > max_similarity:
             max_similarity = cosine_similarity  
             most_similar_aspect = aspect
+    print(f'most similar aspect: {most_similar_aspect}')
 
     # get aspect of every verse
     verse2aspect_path = 'verse2aspect.npy'
     verse2aspect =  np.load(verse2aspect_path)
+    verse2aspectprob_path ='aspects_probs.npy'
+    verse2aspectprob = np.load(verse2aspectprob_path)
 
     bible_verses_path = "./t_kjv.csv"
     bible_df = pd.read_csv(bible_verses_path)
@@ -48,9 +53,15 @@ def find_verse():
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
     output_path = os.path.join(output_folder, output_file)
-    
+    if sort_by_relevence.lower() == 'true':
+        bible_df['relevence'] = verse2aspectprob[:, most_similar_aspect]
+        print('Verses sorted by relevence')
+        print(bible_df.head())
+    qualified_verses = bible_df[aspects_qualified]
+    if sort_by_relevence.lower() == 'true':
+        qualified_verses.sort_values(by=['relevence'], ascending = False, inplace = True)
     with open(output_path, 'w') as outfile:
-        for _, verse in bible_df[aspects_qualified].iterrows():
+        for _, verse in qualified_verses.iterrows():
             outfile.write('{book} {chapter}:{verse} "{content}"\n'.format(book=BOOK_NAME[int(verse['b'])-1], chapter=verse['c'],
             verse=verse['v'], content=verse['t']))
     print('Verses related to "{}" stored at ./{}'.format(query, output_path))
