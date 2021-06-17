@@ -1,10 +1,10 @@
 import sys
 import os
 import numpy as np
-from numpy.core.fromnumeric import sort
 from scipy import spatial
 import pandas as pd
 from embedding import get_embedding
+import argparse
 
 output_folder = 'output'
 output_file = 'related_verses.txt'
@@ -21,11 +21,21 @@ BOOK_NAME = ['Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua
 
 def find_verse():
     '''
-    python test.py [query]
+    python test.py [query] [method], see details in embedding.py
     '''
-    query = sys.argv[1]
-    sort_by_relevence =sys.argv[2]
-    query_embedding = get_embedding(query)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('query', help='query keyword')
+    parser.add_argument('-s', '--sort_method', help='sort by revelence or not', default=True)
+    parser.add_argument('-w', '--use_weighted_embedding', help='use weighted embeddings or not', default=True)
+    args = parser.parse_args()
+    
+    query = args.query
+    sort_by_relevence = args.sort_method
+    use_weighted_embedding = args.use_weighted_embedding
+    # query = sys.argv[1]
+    # sort_by_relevence =sys.argv[2]
+
+    query_embedding = get_embedding(query, use_weighted_embedding)
     print(f'query_embedding={query_embedding.shape}')
     abae_centers_embeddings = np.load('abae_centers.npy')
 
