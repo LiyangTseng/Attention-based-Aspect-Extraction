@@ -20,6 +20,7 @@ def get_embedding(query):
         synonyms = fasttext_embeddings.precomputed_word_embeddings.most_similar(
             query, topn=50000)
         synonym_found = False
+        # TODO change to avg embedding
         for synonym_tuple in tqdm(synonyms, desc='Searching Synonyms'):
             if synonym_tuple[0] in embeddings.vocab.keys():
                 synonym_found = True
