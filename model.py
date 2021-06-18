@@ -150,6 +150,7 @@ class AspectAutoencoder(nn.Module):
             enc = self.seg_encoder(inputs.view(-1), offsets)
         else:
             enc = self.seg_encoder(inputs)
+            self.enc = enc
 
         x = self.lin(enc)
         a_probs = self.softmax(x)

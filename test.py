@@ -6,7 +6,6 @@ from embedding import get_embedding
 import argparse
 from gensim.models import KeyedVectors
 
-output_folder = 'output'
 ASPECTS_NUM = 30
 BOOK_NAME = ['Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua', 'Judges', 'Ruth', '1 Samuel',
             '2 Samuel', '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles', 'Ezra', 'Nehemiah', 'Esther', 
@@ -33,75 +32,66 @@ def find_verse():
     use_ABAE = args.use_ABAE
     sort_by_relevence = args.sort_by_rev
     use_weighted_embedding = args.use_weighted_embedding
-
-    # query = 'burden'
-    # use_ABAE = True
-    # sort_by_relevence = True
-    # use_weighted_embedding = True
+    print('Using ABAE: ', use_ABAE)
+    
+    bible_verses_path = "./t_kjv.csv"
+    bible_df = pd.read_csv(bible_verses_path)
 
     w2v_folder = 'w2v'
     embedding_path = os.path.join(w2v_folder, "bible_verse_org")
     verse_vector = KeyedVectors.load_word2vec_format(embedding_path)
 
-    query_embedding = get_embedding(query, use_weighted_embedding)
+    output_folder = 'output'
+    att_embedding_path = os.path.join(w2v_folder, "bible_verse_att_org")
+    att_verse_vector = KeyedVectors.load_word2vec_format(att_embedding_path)
 
+    query_embedding = get_embedding(query, use_weighted_embedding)
     if use_ABAE:
-        print('using ABAE')
-        print(f'query_embedding={query_embedding.shape}')
+        
         abae_centers_embeddings = np.load('abae_centers.npy')
 
         embedding_path = os.path.join('w2v', "bible_word2vec_org")
         bible_wv = KeyedVectors.load_word2vec_format(embedding_path)
-        print('Aspect centers: ')
-        for i in range(abae_centers_embeddings.shape[0]):
-            print('Aspect {:02}: '.format(i+1), [(word, _) for word, _ in bible_wv.similar_by_vector(abae_centers_embeddings[i])])
         # calculating cosine similarity with every aspects centers
         max_similarity = -1
         most_similar_aspect = 0
 
-        print('Cosine Similarity')
         for aspect in range(ASPECTS_NUM):
             cosine_similarity = 1 - spatial.distance.cosine(query_embedding, abae_centers_embeddings[aspect, ])
             # argmax cosine similarity
             if cosine_similarity > max_similarity:
                 max_similarity = cosine_similarity  
                 most_similar_aspect = aspect
-            print(cosine_similarity)
         print(f'most similar aspect: {most_similar_aspect+1}')
 
         # get aspect of every verse
         verse2aspect_path = 'verse2aspect.npy'
         verse2aspect =  np.load(verse2aspect_path)
-        verse2aspectprob_path ='aspects_probs.npy'
-        verse2aspectprob = np.load(verse2aspectprob_path)
-
-        bible_verses_path = "./t_kjv.csv"
-        bible_df = pd.read_csv(bible_verses_path)
-
+        
         aspects_qualified = (verse2aspect == most_similar_aspect)
         
-        if not os.path.exists(output_folder):
-            os.mkdir(output_folder)
-
-        output_file = 'related_verses_ABAE.txt'
-        output_path = os.path.join(output_folder, output_file)
-        
-
-        bible_df['relevance'] = verse2aspectprob[:, most_similar_aspect] 
+        # verse2aspectprob_path ='aspects_probs.npy'
+        # verse2aspectprob = np.load(verse2aspectprob_path)
+        # bible_df['relevance'] = verse2aspectprob[:, most_similar_aspect] 
         qualified_verses = bible_df[aspects_qualified].copy()
 
-        # relevance = []
-        # for _, qualified_verse in qualified_verses.iterrows():
-        #     # calculate cosine similarities for every verse
-        #     qualified_verse_embedding = verse_vector[str(qualified_verse['id'])]
-        #     relevance.append(1 - spatial.distance.cosine(query_embedding, qualified_verse_embedding))
+        relevance = []
+        for _, qualified_verse in qualified_verses.iterrows():
+            # calculate cosine similarities for every verse
+            qualified_verse_embedding = att_verse_vector[str(qualified_verse['id'])]
+            relevance.append(1 - spatial.distance.cosine(query_embedding, qualified_verse_embedding))
         
-        # qualified_verses['relevance'] = relevance
+        qualified_verses['relevance'] = relevance
 
 
         if sort_by_relevence:
             qualified_verses.sort_values(by=['relevance'], ascending = False, inplace = True)
-        print(qualified_verses.head(50))
+
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+        output_file = 'related_verses_ABAE.txt'
+        output_path = os.path.join(output_folder, output_file)
+
         with open(output_path, 'w') as outfile:
             for _, verse_id in qualified_verses.iterrows():
                 outfile.write('{book} {chapter}:{verse} "{content}"\n'.format(book=BOOK_NAME[int(verse_id['b'])-1], chapter=verse_id['c'],
@@ -116,8 +106,6 @@ def find_verse():
             os.mkdir(output_folder)
         output_file = 'related_verses_vanilla.txt'
         output_path = os.path.join(output_folder, output_file)
-        bible_verses_path = "./t_kjv.csv"
-        bible_df = pd.read_csv(bible_verses_path)
 
         with open(output_path, 'w') as outfile:
             for verse_id in similar_verses:
