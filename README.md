@@ -6,7 +6,7 @@
 ## How to run
 - <code>train_wv.py</code> train word embeddings from dataset
 - <code> train.ipynb </code>: detailed procedure of training ABAE model
-- <code>python test.py [query]</code> will find the most related verses to query, the reuslts will be stored at ./output/related_verses.txt
+- <code>python test.py [query]</code> will find the most related verses to query, the reuslts via ABAE will be stored at ./output/related_verses_ABAE.txt
 ## File Structure
 <pre>
 .
